@@ -46,12 +46,20 @@ command: simple_command
 	;
 
 simple_command:	
-	pipe_list iomodifier_opt NEWLINE {
+	pipe_list iomodifier_list background_opt NEWLINE {
 		printf("   Yacc: Execute command\n");
 		Command::_currentCommand.execute();
 	}
 	| NEWLINE 
 	| error NEWLINE { yyerrok; } 
+	;
+
+background_opt:
+	AMPERSAND {
+		printf("  Processing in background \n");
+		Command::_currentCommand._background = 1;
+	}
+	| /* can be empty */
 	;
 
 pipe_list:
@@ -88,6 +96,11 @@ command_word:
 	}
 	;
 
+iomodifier_list:
+    iomodifier_list iomodifier_opt
+    | /* can be empty */
+    ;
+
 iomodifier_opt:
 	GREAT WORD {
 		printf("   Yacc: insert output \"%s\"\n", $2);
@@ -99,7 +112,7 @@ iomodifier_opt:
 	}
 	| /* can be empty */
 	;
-
+	
 %%
 
 void
