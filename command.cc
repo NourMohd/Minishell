@@ -101,6 +101,7 @@ Command:: clear()
 	_inputFile = 0;
 	_errFile = 0;
 	_background = 0;
+	
 }
 
 void

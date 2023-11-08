@@ -1,3 +1,4 @@
+
 /*
  * CS-413 Spring 98
  * shell.y: parser for shell
@@ -12,9 +13,7 @@
 
 %token	<string_val> WORD 
 
-%token PIPE
-
-%token NOTOKEN GREAT NEWLINE LESS AMPERSAND GREATGREAT
+%token PIPE NOTOKEN GREAT NEWLINE LESS GREATGREAT AMPERSAND 
 
 
 %union	{
@@ -94,7 +93,11 @@ iomodifier_opt:
 		printf("   Yacc: insert output \"%s\"\n", $2);
 		Command::_currentCommand._outFile = $2;
 	}
-	| /* can be empty */ 
+	| LESS WORD {
+		printf("   Yacc: insert input \"%s\"\n", $2);
+		Command::_currentCommand._inputFile = $2;
+	}
+	| /* can be empty */
 	;
 
 %%
