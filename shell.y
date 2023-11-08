@@ -106,9 +106,15 @@ iomodifier_opt:
 		printf("   Yacc: insert output \"%s\"\n", $2);
 		Command::_currentCommand._outFile = $2;
 	}
-	| LESS WORD {
+	| 
+	LESS WORD {
 		printf("   Yacc: insert input \"%s\"\n", $2);
 		Command::_currentCommand._inputFile = $2;
+	}
+	|
+	GREATGREAT WORD {
+		printf("   Yacc: appending output \"%s\"\n", $2);
+		Command::_currentCommand._outFile = $2;
 	}
 	| /* can be empty */
 	;
