@@ -12,8 +12,9 @@
 
 %token	<string_val> WORD 
 
+%token PIPE
 
-%token NOTOKEN GREAT NEWLINE LESS GREATGREAT AMPERSAND PIPE
+%token NOTOKEN GREAT NEWLINE LESS AMPERSAND GREATGREAT
 
 
 %union	{
@@ -24,7 +25,7 @@
 extern "C" 
 {
 	int yylex();
-	void yyerror (char const *s);
+	void yyerror (char const *s); 
 }
 #define yylex yylex
 #include <stdio.h>
@@ -46,7 +47,7 @@ command: simple_command
 	;
 
 simple_command:	
-	pipe_list iomodifier_opt NEWLINE{
+	pipe_list iomodifier_opt NEWLINE {
 		printf("   Yacc: Execute command\n");
 		Command::_currentCommand.execute();
 	}
@@ -93,10 +94,7 @@ iomodifier_opt:
 		printf("   Yacc: insert output \"%s\"\n", $2);
 		Command::_currentCommand._outFile = $2;
 	}
-	| LESS WORD {
-		printf("   Yacc: insert input \"%s\"\n", $2);
-		Command::_currentCommand._inputFile = $2;
-	}
+	| /* can be empty */ 
 	;
 
 %%
