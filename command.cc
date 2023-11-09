@@ -154,13 +154,8 @@ void Command::execute()
 	int defaultout = dup(1); // Output:   file
 	int defaulterr = dup(2); // Error:    defaulterr
 
-	int outfd = -1, infd = -1, errfd = -1;
+	int infd = dup(0), outfd = dup(1), errfd =dup(2);
 	// Create file descriptor
-	if (_currentCommand._outFile)
-	{
-		int flags = _currentCommand._append ? O_WRONLY | O_CREAT | O_APPEND : O_WRONLY | O_CREAT | O_TRUNC;
-		outfd = open(_currentCommand._outFile, flags, 0666);
-	}
 
 	if (_currentCommand._inputFile)
 	{
@@ -172,58 +167,73 @@ void Command::execute()
 		errfd = creat(_currentCommand._errFile, 0666);
 	}
 
-	// Redirect output to the created otfile instead of printing to stdout
-	if (outfd > 0)
-	{
-		dup2(outfd, 1);
-		close(outfd);
-	}
-
 	// Redirect input
-
-	if (infd > 0)
+	if (infd)
 	{
 		dup2(infd, 0);
 		close(infd);
 	}
 
 	// Redirect err
-	if (errfd > 0)
+	if (errfd)
 	{
 		dup2(errfd, 2);
 		close(errfd);
 	}
 
-	// Create new process for command
-	const char *command_name = _currentSimpleCommand->_arguments[0];
-	int pid = fork();
-	if (pid == -1)
+	int pid;
+	for (int i = 0; i < _numberOfSimpleCommands; i++)
 	{
-		perror("error\n");
-		exit(2);
-	}
-
-	if (pid == 0)
-	{
-		// Child
-
-		// close file descriptors that are not needed
+		dup2(infd, 0);
+		if (i == _numberOfSimpleCommands - 1) 
+		{
+			if (_currentCommand._outFile)
+			{
+				int flags = _currentCommand._append ? O_WRONLY | O_CREAT | O_APPEND : O_WRONLY | O_CREAT | O_TRUNC;
+				outfd = open(_currentCommand._outFile, flags, 0666);
+			}
+			else outfd = defaultout;
+		}
+		else // piping
+		{
+			int fdpipe[2];
+			if (pipe(fdpipe) == -1)
+			{
+				perror("error");
+				exit(2);
+			}
+			outfd = fdpipe[1];
+			infd = fdpipe[0];
+		}
+		dup2(outfd, 1);
 		close(outfd);
-		close(infd);
-		close(errfd);
-		close(defaultin);
-		close(defaultout);
-		close(defaulterr);
-		execvp(command_name, _currentSimpleCommand->_arguments);
+		// Create new process for command
+		const char *command_name = _simpleCommands[i]->_arguments[0];
+		pid = fork();
+		if (pid == -1)
+		{
+			perror("error\n");
+			exit(2);
+		}
 
-		// exec() is not suppose to return, something went wrong
-		perror("error");
-		exit(2);
-	}
-	// if process is not a background process
-	if (_currentCommand._background == 0)
-	{
-		waitpid(pid, 0, 0);
+		if (pid == 0)
+		{
+			// Child
+
+			// close file descriptors that are not needed
+			close(outfd);
+			close(infd);
+			close(errfd);
+			close(defaultin);
+			close(defaultout);
+			close(defaulterr);
+
+			execvp(command_name, _simpleCommands[i]->_arguments);
+
+			// exec() is not suppose to return, something went wrong
+			perror("error");
+			exit(2);
+		}
 	}
 
 	dup2(defaultin, 0);
@@ -238,6 +248,11 @@ void Command::execute()
 	close(defaultout);
 	close(defaulterr);
 
+	// if process is not a background process
+	if (_currentCommand._background == 0)
+	{
+		waitpid(pid, 0, 0);
+	}
 	// Clear to prepare for next command
 	clear();
 
