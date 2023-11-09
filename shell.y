@@ -56,7 +56,7 @@ simple_command:
 
 background_opt:
 	AMPERSAND {
-		printf("  Processing in background \n");
+		printf("   Processing in background \n");
 		Command::_currentCommand._background = 1;
 	}
 	| /* can be empty */
