@@ -41,7 +41,7 @@ main(int argc, char **argv, char **envp)
 	// Input:    defaultin
 	// Output:   file
 	// Error:    defaulterr
-
+	
 	// Create file descriptor 
 	int outfd = creat( argv[ 1 ], 0666 );
 	

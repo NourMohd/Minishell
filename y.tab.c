@@ -1181,7 +1181,7 @@ yyreduce:
   case 9: /* background_opt: AMPERSAND  */
 #line 58 "shell.y"
                   {
-		printf("  Processing in background \n");
+		printf("   Processing in background \n");
 		Command::_currentCommand._background = 1;
 	}
 #line 1188 "y.tab.c"
