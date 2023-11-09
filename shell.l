@@ -33,6 +33,18 @@
 		return PIPE;
 	}
 
+"<" 	{
+		return LESS;
+	}
+
+">>" 	{
+		return GREATGREAT;
+}
+
+"&" 	{
+		return AMPERSAND;
+}
+
 [^ \t\n][^ \t\n]*  {
 		/* Assume that file names have only alpha chars */
 		yylval.string_val = strdup(yytext);
