@@ -58,6 +58,7 @@ Command::Command()
 	_inputFile = 0;
 	_errFile = 0;
 	_background = 0;
+	_append = 0;
 }
 
 void Command::insertSimpleCommand(SimpleCommand *simpleCommand)
@@ -106,6 +107,7 @@ void Command::clear()
 	_inputFile = 0;
 	_errFile = 0;
 	_background = 0;
+	_append = 0;
 }
 
 void Command::print()
@@ -126,11 +128,12 @@ void Command::print()
 	}
 
 	printf("\n\n");
-	printf("  Output       Input        Error        Background\n");
-	printf("  ------------ ------------ ------------ ------------\n");
-	printf("  %-12s %-12s %-12s %-12s\n", _outFile ? _outFile : "default",
+	printf("  Output       Input        Error        Background        Append\n");
+	printf("  ------------ ------------ ------------ ------------ ------------\n");
+	printf("  %-12s %-12s %-12s %-12s %-12s\n", _outFile ? _outFile : "default",
 		   _inputFile ? _inputFile : "default", _errFile ? _errFile : "default",
-		   _background ? "YES" : "NO");
+		   _background ? "YES" : "NO",
+		   _append ? "YES" : "NO");
 	printf("\n\n");
 }
 
@@ -147,15 +150,16 @@ void Command::execute()
 	print();
 
 	// execution
-	int defaultin = dup( 0 );		// Input:    defaultin
-	int defaultout = dup( 1 );		// Output:   file
-	int defaulterr = dup( 2 );		// Error:    defaulterr
+	int defaultin = dup(0);	 // Input:    defaultin
+	int defaultout = dup(1); // Output:   file
+	int defaulterr = dup(2); // Error:    defaulterr
 
 	int outfd = -1, infd = -1, errfd = -1;
 	// Create file descriptor
 	if (_currentCommand._outFile)
 	{
-		outfd = creat(_currentCommand._outFile, 0666);
+		int flags = _currentCommand._append ? O_WRONLY | O_CREAT | O_APPEND : O_WRONLY | O_CREAT | O_TRUNC;
+		outfd = open(_currentCommand._outFile, flags, 0666);
 	}
 
 	if (_currentCommand._inputFile)
@@ -168,7 +172,7 @@ void Command::execute()
 		errfd = creat(_currentCommand._errFile, 0666);
 	}
 
-	// Redirect output to the created utfile instead off printing to stdout
+	// Redirect output to the created otfile instead of printing to stdout
 	if (outfd > 0)
 	{
 		dup2(outfd, 1);

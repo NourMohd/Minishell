@@ -588,7 +588,7 @@ static const yytype_int8 yyrline[] =
 {
        0,    37,    37,    41,    42,    45,    49,    53,    54,    58,
       62,    66,    67,    71,    78,    79,    83,    91,   100,   101,
-     105,   110,   115,   119
+     105,   110,   115,   120
 };
 #endif
 
@@ -1239,13 +1239,14 @@ yyreduce:
 #line 115 "shell.y"
                         {
 		printf("   Yacc: appending output \"%s\"\n", (yyvsp[0].string_val));
+		Command::_currentCommand._append = 1;
 		Command::_currentCommand._outFile = (yyvsp[0].string_val);
 	}
-#line 1245 "y.tab.c"
+#line 1246 "y.tab.c"
     break;
 
 
-#line 1249 "y.tab.c"
+#line 1250 "y.tab.c"
 
       default: break;
     }
@@ -1438,7 +1439,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 122 "shell.y"
+#line 123 "shell.y"
 
 
 void
