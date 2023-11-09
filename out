@@ -1,0 +1,3 @@
+helloo nouuuuur
+
+cat out | grep helloo | sort 
