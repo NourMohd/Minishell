@@ -142,8 +142,50 @@ Command::execute()
 	// Print contents of Command data structure
 	print();
 
+//////////////////////////////////////////// testing  //////////////////////////---------------------------------------
 	// Add execution here
+	int defaultin = dup( 0 );
+	int defaultout = dup( 1 );
+	int defaulterr = dup( 2 );
+
+	// Input:    defaultin
+	// Output:   file
+	// Error:    defaulterr
+
+	// Create new process for command
+	const char *command_name = _currentSimpleCommand->_arguments[0];
+	int pid = fork();
+	if ( pid == -1 ) {
+		perror( "ls: fork\n");
+		exit( 2 );
+	}
+
+	if (pid == 0) {
+		//Child
+		
+		// close file descriptors that are not needed
+		close( defaultin );
+		close( defaultout );
+		close( defaulterr );
+
+		// You can use execvp() instead if the arguments are stored in an array
+		execlp(command_name, command_name, "-l", (char *) 0);
+
+		// exec() is not suppose to return, something went wrong
+		perror( "ls: exec ls");
+		exit( 2 );
+	}
+
+	// Close file descriptors that are not needed
+	close( defaultin );
+	close( defaultout );
+	close( defaulterr );
+
+
 	// For every simple command fork a new process
+
+//////////////////////////////////////////// testing finished  //////////////////////////---------------------------------------
+
 	// Setup i/o redirection
 	// and call exec
 
