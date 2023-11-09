@@ -47,7 +47,7 @@ main(int argc, char **argv, char **envp)
 	// such that the standard output from one process becomes the standard input of the other process.
 	// so if a process writes to fdpipe[1] process be can read from fdpipe[0] 
 	int fdpipe[2];
-	if ( pipte(fdpipe) == -1) {
+	if ( pipe(fdpipe) == -1) {
 		perror( "cat_grep: pipe");
 		exit( 2 );
 	}
