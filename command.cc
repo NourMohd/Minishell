@@ -17,6 +17,7 @@
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include "command.h"
 
@@ -196,8 +197,6 @@ void Command::execute()
 			}
 			else if (_currentCommand._errFile)
 			{
-
-				
 				int flags = _currentCommand._append ? O_WRONLY | O_CREAT | O_APPEND : O_WRONLY | O_CREAT | O_TRUNC;
 				outfd = open(_currentCommand._errFile, flags, 0666);
 			}
@@ -285,8 +284,14 @@ SimpleCommand *Command::_currentSimpleCommand;
 
 int yyparse(void);
 
+void ctrl_C(int sig_int=0) {
+  printf("\n");
+  Command::_currentCommand.prompt();
+}
+
 int main()
 {
+	signal(SIGINT, ctrl_C);
 	Command::_currentCommand.prompt();
 	yyparse();
 	return 0;
