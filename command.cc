@@ -271,9 +271,6 @@ void Command::execute()
 	prompt();
 }
 
-
-
-
 // Shell implementation
 
 void Command::prompt()
