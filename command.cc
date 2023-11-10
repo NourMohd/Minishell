@@ -164,6 +164,7 @@ void Command::execute()
 
 	if (_currentCommand._errFile)
 	{
+		
 		int flags = _currentCommand._append ? O_WRONLY | O_CREAT | O_APPEND : O_WRONLY | O_CREAT | O_TRUNC;
 		errfd = open(_currentCommand._errFile, flags, 0666);
 	}
