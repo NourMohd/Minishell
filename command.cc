@@ -22,7 +22,10 @@
 #include <sys/time.h>
 
 #include "command.h"
-void log_file_handler(int signal);
+
+bool children_reaped = false;
+
+
 SimpleCommand::SimpleCommand()
 {
 	// Creat available space for 5 arguments
@@ -288,6 +291,9 @@ void Command::execute()
 	// if process is not a background process
 	if (_currentCommand._background == 0)
 	{
+		while(!children_reaped);
+			children_reaped = false;
+
 		waitpid(pid, 0, 0);
 	}
 	// Clear to prepare for next command
@@ -318,54 +324,80 @@ void ctrl_C(int sig_int = 0)
 	Command::_currentCommand.prompt();
 }
 
-void log_file_handler(int signal)
-{
-	int status;
-	pid_t pid;
-	struct timeval current_time;
-	FILE *log_file;
+// void log_file_handler(int signal)
+// {
+// 	int status;
+// 	pid_t pid;
+// 	struct timeval current_time;
+// 	FILE *log_file;
 
-	// Open or create a log file in append mode
-	log_file = fopen("logfile.txt", "a");
-	if (log_file == NULL)
-	{
+// 	// Open or create a log file in append mode
+// 	log_file = fopen("logfile.txt", "a");
+// 	if (log_file == NULL)
+// 	{
+// 		perror("Error opening log file");
+// 		exit(EXIT_FAILURE);
+// 	}
+
+// 	while (1)
+// 	{
+// 		pid = wait3(&status, WNOHANG, (struct rusage *)NULL);
+// 		if (pid == 0)
+// 			break; // No more child processes to reap
+// 		else if (pid == -1)
+// 		{
+// 			gettimeofday(&current_time, NULL);
+
+// 			fprintf(log_file, "Child process %d terminated at %ld seconds %ld microseconds.\n", getpid(),
+// 					current_time.tv_sec, current_time.tv_usec);
+// 			// perror("Error in wait3");
+// 			break;
+// 		}
+// 		else
+// 		{
+// 			// Get current time
+// 			gettimeofday(&current_time, NULL);
+
+// 			// Write information to the log file
+// 			fprintf(log_file, "Child process %d terminated at %ld seconds %ld microseconds.\n", pid,
+// 					current_time.tv_sec, current_time.tv_usec);
+
+// 			// Close the log file
+// 		}
+// 	}
+// 	fclose(log_file);
+// }
+
+void sigchld_handler(int sig) {
+
+	// open logs
+	FILE *logfile = fopen("logfile.txt", "a+");
+	if (logfile == NULL) {
 		perror("Error opening log file");
-		exit(EXIT_FAILURE);
+		return;
 	}
 
-	while (1)
-	{
-		pid = wait3(&status, WNOHANG, (struct rusage *)NULL);
-		if (pid == 0)
-			break; // No more child processes to reap
-		else if (pid == -1)
-		{
-			gettimeofday(&current_time, NULL);
-
-			fprintf(log_file, "Child process %d terminated at %ld seconds %ld microseconds.\n", getpid(),
-					current_time.tv_sec, current_time.tv_usec);
-			// perror("Error in wait3");
-			break;
-		}
-		else
-		{
-			// Get current time
-			gettimeofday(&current_time, NULL);
-
-			// Write information to the log file
-			fprintf(log_file, "Child process %d terminated at %ld seconds %ld microseconds.\n", pid,
-					current_time.tv_sec, current_time.tv_usec);
-
-			// Close the log file
-		}
+	// reap all children
+	pid_t pid;
+    int   status;
+    while ((pid = waitpid(-1, &status, WNOHANG)) > 0){
+		fprintf(logfile, "Child process with PID %d terminated with status %d\n", pid, status);
 	}
-	fclose(log_file);
+
+	// close logs
+	fclose(logfile);
+
+	// set flag
+	children_reaped = true;
+
 }
 
 int main()
 {
 	signal(SIGINT, ctrl_C);
-	signal(SIGCHLD, log_file_handler);
+	// signal(SIGCHLD, log_file_handler);
+	signal(SIGCHLD, sigchld_handler);
+
 	Command::_currentCommand.prompt();
 	yyparse();
 	return 0;

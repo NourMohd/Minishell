@@ -1,5 +1,12 @@
-Child process 23878 terminated at 1699655155 seconds 180464 microseconds.
-Child process 23876 terminated at 1699655155 seconds 180817 microseconds.
-Child process 23876 terminated at 1699655157 seconds 197185 microseconds.
-Child process 23886 terminated at 1699655160 seconds 335873 microseconds.
-Child process 23876 terminated at 1699655160 seconds 336133 microseconds.
+Child process with PID 24374 terminated with status 0
+Child process with PID 24376 terminated with status 0
+Child process with PID 24382 terminated with status 0
+Child process with PID 24383 terminated with status 0
+Child process with PID 24385 terminated with status 0
+Child process with PID 24386 terminated with status 0
+Child process with PID 24392 terminated with status 0
+Child process with PID 24393 terminated with status 0
+Child process with PID 24394 terminated with status 0
+Child process with PID 24396 terminated with status 0
+Child process with PID 24397 terminated with status 0
+Child process with PID 24401 terminated with status 0
