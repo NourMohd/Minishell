@@ -22,7 +22,7 @@
 #include <sys/time.h>
 
 #include "command.h"
-
+void log_file_handler(int signal);
 SimpleCommand::SimpleCommand()
 {
 	// Creat available space for 5 arguments
@@ -254,7 +254,7 @@ void Command::execute()
 			exit(2);
 		}
 
-		if (pid == 0)
+		if (pid == 0) // child
 		{
 			// Child
 
@@ -273,7 +273,6 @@ void Command::execute()
 			exit(2);
 		}
 	}
-
 	dup2(defaultin, 0);
 	dup2(defaultout, 1);
 	dup2(defaulterr, 2);
@@ -341,6 +340,10 @@ void log_file_handler(int signal)
 			break; // No more child processes to reap
 		else if (pid == -1)
 		{
+			gettimeofday(&current_time, NULL);
+
+			fprintf(log_file, "Child process %d terminated at %ld seconds %ld microseconds.\n", getpid(),
+					current_time.tv_sec, current_time.tv_usec);
 			// perror("Error in wait3");
 			break;
 		}
@@ -354,15 +357,15 @@ void log_file_handler(int signal)
 					current_time.tv_sec, current_time.tv_usec);
 
 			// Close the log file
-			fclose(log_file);
 		}
 	}
+	fclose(log_file);
 }
 
 int main()
 {
 	signal(SIGINT, ctrl_C);
-	// signal(SIGCHLD, log_file_handler);
+	signal(SIGCHLD, log_file_handler);
 	Command::_currentCommand.prompt();
 	yyparse();
 	return 0;
