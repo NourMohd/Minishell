@@ -1,3 +1,6 @@
-helloo nouuuuur
-
-cat out | grep helloo | sort 
+command.cc
+command.h
+command.o
+command.cc
+command.h
+command.o

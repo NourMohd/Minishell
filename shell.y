@@ -13,7 +13,7 @@
 
 %token	<string_val> WORD 
 
-%token PIPE NOTOKEN GREAT NEWLINE LESS GREATGREAT AMPERSAND 
+%token PIPE NOTOKEN GREAT NEWLINE LESS GREATGREAT AMPERSAND AMPGRTGRT NONSPECIAL
 
 
 %union	{
@@ -78,7 +78,7 @@ arg_list:
 	arg_list argument
 	| /* can be empty */
 	;
-
+ 
 argument:
 	WORD {
                printf("   Yacc: insert argument \"%s\"\n", $1);
@@ -103,7 +103,7 @@ iomodifier_list:
 
 iomodifier_opt:
 	GREAT WORD {
-		printf("   Yacc: insert output \"%s\"\n", $2);
+		printf("   Yacc: insert output to \"%s\"\n", $2);
 		Command::_currentCommand._outFile = $2;
 	}
 	| 
@@ -113,9 +113,15 @@ iomodifier_opt:
 	}
 	|
 	GREATGREAT WORD {
-		printf("   Yacc: appending output \"%s\"\n", $2);
+		printf("   Yacc: appending output to \"%s\"\n", $2);
 		Command::_currentCommand._append = 1;
 		Command::_currentCommand._outFile = $2;
+	}
+	|
+	AMPGRTGRT WORD {
+		printf("   Yacc: appending output or error to \"%s\"\n", $2);
+		Command::_currentCommand._append = 1;
+		Command::_currentCommand._errFile = $2;
 	}
 	| /* can be empty */
 	;

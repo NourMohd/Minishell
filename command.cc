@@ -17,8 +17,15 @@
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <glob.h>
 
 #include "command.h"
+
+bool children_reaped = false;
+
 
 SimpleCommand::SimpleCommand()
 {
@@ -30,6 +37,17 @@ SimpleCommand::SimpleCommand()
 
 void SimpleCommand::insertArgument(char *argument)
 {
+	if(strchr(argument, '*')  || strchr(argument, '?'))
+	{
+		glob_t globb;
+		if(!glob(argument, 0, NULL, &globb))
+		{
+			for(int i=0; i<globb.gl_pathc; i++)
+				insertArgument(globb.gl_pathv[i]);
+		}
+		return;
+	}
+
 	if (_numberOfAvailableArguments == _numberOfArguments + 1)
 	{
 		// Double the available space
@@ -145,6 +163,32 @@ void Command::execute()
 		prompt();
 		return;
 	}
+	// exit operation
+	if (strcmp(_currentSimpleCommand->_arguments[0], "exit") == 0)
+	{
+		printf("Good Bye !!\n");
+		exit(0);
+	}
+	// cd operation
+	if (strcmp(_currentSimpleCommand->_arguments[0], "cd") == 0)
+	{
+		int cdResult; // returns 0 if successful else -1
+		if (_currentSimpleCommand->_numberOfArguments == 1)
+		{
+			cdResult = chdir(getenv("HOME")); // home
+		}
+		else
+		{
+			cdResult = chdir(_currentSimpleCommand->_arguments[1]); // change directory
+		}
+		if (cdResult == -1)
+		{
+			perror("cd");
+		}
+		clear();
+		prompt();
+		return;
+	}
 
 	// Print contents of Command data structure
 	print();
@@ -154,9 +198,8 @@ void Command::execute()
 	int defaultout = dup(1); // Output:   file
 	int defaulterr = dup(2); // Error:    defaulterr
 
-	int infd = dup(0), outfd = dup(1), errfd =dup(2);
+	int infd = dup(0), outfd = dup(1), errfd = dup(2);
 	// Create file descriptor
-
 	if (_currentCommand._inputFile)
 	{
 		infd = open(_inputFile, O_RDONLY, 0666);
@@ -164,7 +207,8 @@ void Command::execute()
 
 	if (_currentCommand._errFile)
 	{
-		errfd = creat(_currentCommand._errFile, 0666);
+		int flags = _currentCommand._append ? O_WRONLY | O_CREAT | O_APPEND : O_WRONLY | O_CREAT | O_TRUNC;
+		errfd = open(_currentCommand._errFile, flags, 0666);
 	}
 
 	// Redirect input
@@ -185,14 +229,23 @@ void Command::execute()
 	for (int i = 0; i < _numberOfSimpleCommands; i++)
 	{
 		dup2(infd, 0);
-		if (i == _numberOfSimpleCommands - 1) 
+		if (i == _numberOfSimpleCommands - 1)
 		{
+
 			if (_currentCommand._outFile)
 			{
 				int flags = _currentCommand._append ? O_WRONLY | O_CREAT | O_APPEND : O_WRONLY | O_CREAT | O_TRUNC;
 				outfd = open(_currentCommand._outFile, flags, 0666);
 			}
-			else outfd = defaultout;
+			else if (_currentCommand._errFile)
+			{
+				int flags = _currentCommand._append ? O_WRONLY | O_CREAT | O_APPEND : O_WRONLY | O_CREAT | O_TRUNC;
+				outfd = open(_currentCommand._errFile, flags, 0666);
+			}
+			else
+			{
+				outfd = defaultout;
+			}
 		}
 		else // piping
 		{
@@ -216,7 +269,7 @@ void Command::execute()
 			exit(2);
 		}
 
-		if (pid == 0)
+		if (pid == 0) // child
 		{
 			// Child
 
@@ -235,7 +288,6 @@ void Command::execute()
 			exit(2);
 		}
 	}
-
 	dup2(defaultin, 0);
 	dup2(defaultout, 1);
 	dup2(defaulterr, 2);
@@ -251,6 +303,9 @@ void Command::execute()
 	// if process is not a background process
 	if (_currentCommand._background == 0)
 	{
+		while(!children_reaped);
+			children_reaped = false;
+
 		waitpid(pid, 0, 0);
 	}
 	// Clear to prepare for next command
@@ -264,7 +319,9 @@ void Command::execute()
 
 void Command::prompt()
 {
-	printf("myshell>");
+	printf("\033[0;36m");
+	printf("%s", get_current_dir_name());
+	printf("\033[1;37m>");
 	fflush(stdout);
 }
 
@@ -273,8 +330,86 @@ SimpleCommand *Command::_currentSimpleCommand;
 
 int yyparse(void);
 
+void ctrl_C(int sig_int = 0)
+{
+	printf("\n");
+	Command::_currentCommand.prompt();
+}
+
+// void log_file_handler(int signal)
+// {
+// 	int status;
+// 	pid_t pid;
+// 	struct timeval current_time;
+// 	FILE *log_file;
+
+// 	// Open or create a log file in append mode
+// 	log_file = fopen("logfile.txt", "a");
+// 	if (log_file == NULL)
+// 	{
+// 		perror("Error opening log file");
+// 		exit(EXIT_FAILURE);
+// 	}
+
+// 	while (1)
+// 	{
+// 		pid = wait3(&status, WNOHANG, (struct rusage *)NULL);
+// 		if (pid == 0)
+// 			break; // No more child processes to reap
+// 		else if (pid == -1)
+// 		{
+// 			gettimeofday(&current_time, NULL);
+
+// 			fprintf(log_file, "Child process %d terminated at %ld seconds %ld microseconds.\n", getpid(),
+// 					current_time.tv_sec, current_time.tv_usec);
+// 			// perror("Error in wait3");
+// 			break;
+// 		}
+// 		else
+// 		{
+// 			// Get current time
+// 			gettimeofday(&current_time, NULL);
+
+// 			// Write information to the log file
+// 			fprintf(log_file, "Child process %d terminated at %ld seconds %ld microseconds.\n", pid,
+// 					current_time.tv_sec, current_time.tv_usec);
+
+// 			// Close the log file
+// 		}
+// 	}
+// 	fclose(log_file);
+// }
+
+void sigchld_handler(int sig) {
+
+	// open logs
+	FILE *logfile = fopen("logfile.txt", "a+");
+	if (logfile == NULL) {
+		perror("Error opening log file");
+		return;
+	}
+
+	// reap all children
+	pid_t pid;
+    int   status;
+    while ((pid = waitpid(-1, &status, WNOHANG)) > 0){
+		fprintf(logfile, "Child process with PID %d terminated with status %d\n", pid, status);
+	}
+
+	// close logs
+	fclose(logfile);
+
+	// set flag
+	children_reaped = true;
+
+}
+
 int main()
 {
+	signal(SIGINT, ctrl_C);
+	// signal(SIGCHLD, log_file_handler);
+	signal(SIGCHLD, sigchld_handler);
+
 	Command::_currentCommand.prompt();
 	yyparse();
 	return 0;
