@@ -61,7 +61,8 @@ extern int yydebug;
     NEWLINE = 262,                 /* NEWLINE  */
     LESS = 263,                    /* LESS  */
     GREATGREAT = 264,              /* GREATGREAT  */
-    AMPERSAND = 265                /* AMPERSAND  */
+    AMPERSAND = 265,               /* AMPERSAND  */
+    AMPGRTGRT = 266                /* AMPGRTGRT  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -78,6 +79,7 @@ extern int yydebug;
 #define LESS 263
 #define GREATGREAT 264
 #define AMPERSAND 265
+#define AMPGRTGRT 266
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -88,7 +90,7 @@ union YYSTYPE
 		char   *string_val;
 	
 
-#line 92 "y.tab.h"
+#line 94 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

@@ -154,7 +154,7 @@ void Command::execute()
 	int defaultout = dup(1); // Output:   file
 	int defaulterr = dup(2); // Error:    defaulterr
 
-	int infd = dup(0), outfd = dup(1), errfd =dup(2);
+	int infd = dup(0), outfd = dup(1), errfd = dup(2);
 	// Create file descriptor
 
 	if (_currentCommand._inputFile)
@@ -164,7 +164,8 @@ void Command::execute()
 
 	if (_currentCommand._errFile)
 	{
-		errfd = creat(_currentCommand._errFile, 0666);
+		int flags = _currentCommand._append ? O_WRONLY | O_CREAT | O_APPEND : O_WRONLY | O_CREAT | O_TRUNC;
+		errfd = open(_currentCommand._errFile, flags, 0666);
 	}
 
 	// Redirect input
@@ -185,14 +186,23 @@ void Command::execute()
 	for (int i = 0; i < _numberOfSimpleCommands; i++)
 	{
 		dup2(infd, 0);
-		if (i == _numberOfSimpleCommands - 1) 
+		if (i == _numberOfSimpleCommands - 1)
 		{
+
 			if (_currentCommand._outFile)
 			{
 				int flags = _currentCommand._append ? O_WRONLY | O_CREAT | O_APPEND : O_WRONLY | O_CREAT | O_TRUNC;
 				outfd = open(_currentCommand._outFile, flags, 0666);
 			}
-			else outfd = defaultout;
+			else if (_currentCommand._errFile)
+			{
+				int flags = _currentCommand._append ? O_WRONLY | O_CREAT | O_APPEND : O_WRONLY | O_CREAT | O_TRUNC;
+				outfd = open(_currentCommand._errFile, flags, 0666);
+			}
+			else
+			{
+				outfd = defaultout;
+			}
 		}
 		else // piping
 		{
