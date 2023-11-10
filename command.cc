@@ -18,6 +18,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "command.h"
 
@@ -146,6 +147,18 @@ void Command::execute()
 		prompt();
 		return;
 	}
+	// exit operation
+	if(strcmp(_currentSimpleCommand->_arguments[0], "exit") == 0){
+		printf("Good Bye !!\n");
+		exit(0);
+	}
+	// cd operation
+	if(strcmp(_currentSimpleCommand->_arguments[0], "cd") == 0){
+		if (_currentSimpleCommand->_numberOfArguments == 1){
+			chdir(); // home
+		}
+		chdir(); // change directory
+	}
 
 	// Print contents of Command data structure
 	print();
@@ -157,7 +170,6 @@ void Command::execute()
 
 	int infd = dup(0), outfd = dup(1), errfd = dup(2);
 	// Create file descriptor
-
 	if (_currentCommand._inputFile)
 	{
 		infd = open(_inputFile, O_RDONLY, 0666);
