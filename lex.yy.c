@@ -363,7 +363,7 @@ struct yy_trans_info
 static const flex_int16_t yy_accept[16] =
     {   0,
         0,    0,   12,    9,    2,    1,    7,    5,    3,    4,
-        9,    9,    6,    8,    0
+        9,    0,    6,    8,    0
     } ;
 
 static const YY_CHAR yy_ec[256] =
@@ -400,31 +400,33 @@ static const YY_CHAR yy_ec[256] =
 
 static const YY_CHAR yy_meta[8] =
     {   0,
-        1,    2,    2,    1,    1,    1,    1
+        1,    1,    1,    1,    1,    1,    1
     } ;
 
-static const flex_int16_t yy_base[17] =
+static const flex_int16_t yy_base[16] =
     {   0,
-        0,    0,   12,    0,   13,   13,    5,    0,    4,    0,
-        0,    3,    0,    0,   13,    7
+        0,    0,   13,   11,   14,   14,    5,   14,    4,   14,
+        8,    2,   14,   14,   14
     } ;
 
-static const flex_int16_t yy_def[17] =
+static const flex_int16_t yy_def[16] =
     {   0,
-       15,    1,   15,   16,   15,   15,   16,   16,   16,   16,
-       16,   16,   16,   16,    0,   15
+       15,    1,   15,   15,   15,   15,   15,   15,   15,   15,
+       15,   15,   15,   15,    0
     } ;
 
-static const flex_int16_t yy_nxt[21] =
+static const flex_int16_t yy_nxt[22] =
     {   0,
-        4,    5,    6,    7,    8,    9,   10,   11,   14,   13,
-       12,   15,    3,   15,   15,   15,   15,   15,   15,   15
+        4,    5,    6,    7,    8,    9,   10,   14,   11,   13,
+       12,   11,   15,    3,   15,   15,   15,   15,   15,   15,
+       15
     } ;
 
-static const flex_int16_t yy_chk[21] =
+static const flex_int16_t yy_chk[22] =
     {   0,
-        1,    1,    1,    1,    1,    1,    1,   16,   12,    9,
-        7,    3,   15,   15,   15,   15,   15,   15,   15,   15
+        1,    1,    1,    1,    1,    1,    1,   12,   11,    9,
+        7,    4,    3,   15,   15,   15,   15,   15,   15,   15,
+       15
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -454,8 +456,8 @@ char *yytext;
 #include <string.h>
 #include "y.tab.h"
 
-#line 458 "lex.yy.c"
-#line 459 "lex.yy.c"
+#line 460 "lex.yy.c"
+#line 461 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -675,7 +677,7 @@ YY_DECL
 #line 17 "shell.l"
 
 
-#line 679 "lex.yy.c"
+#line 681 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -708,7 +710,7 @@ yy_match:
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 13 );
+		while ( yy_base[yy_current_state] != 14 );
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
@@ -791,7 +793,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 52 "shell.l"
+#line 53 "shell.l"
 {
 		/* Assume that file names have only alpha chars */
 		yylval.string_val = strdup(yytext);
@@ -800,7 +802,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 58 "shell.l"
+#line 59 "shell.l"
 {
 		/* Invalid character in input */
 		return NOTOKEN;
@@ -808,10 +810,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 65 "shell.l"
+#line 66 "shell.l"
 ECHO;
 	YY_BREAK
-#line 815 "lex.yy.c"
+#line 817 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1816,7 +1818,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 65 "shell.l"
+#line 66 "shell.l"
 
 	
 

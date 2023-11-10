@@ -13,7 +13,7 @@
 
 %token	<string_val> WORD 
 
-%token PIPE NOTOKEN GREAT NEWLINE LESS GREATGREAT AMPERSAND AMPGRTGRT
+%token PIPE NOTOKEN GREAT NEWLINE LESS GREATGREAT AMPERSAND AMPGRTGRT NONSPECIAL
 
 
 %union	{
@@ -78,7 +78,7 @@ arg_list:
 	arg_list argument
 	| /* can be empty */
 	;
-
+ 
 argument:
 	WORD {
                printf("   Yacc: insert argument \"%s\"\n", $1);
