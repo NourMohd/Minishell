@@ -20,6 +20,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <glob.h>
 
 #include "command.h"
 
@@ -36,6 +37,17 @@ SimpleCommand::SimpleCommand()
 
 void SimpleCommand::insertArgument(char *argument)
 {
+	if(strchr(argument, '*')  || strchr(argument, '?'))
+	{
+		glob_t globb;
+		if(!glob(argument, 0, NULL, &globb))
+		{
+			for(int i=0; i<globb.gl_pathc; i++)
+				insertArgument(globb.gl_pathv[i]);
+		}
+		return;
+	}
+
 	if (_numberOfAvailableArguments == _numberOfArguments + 1)
 	{
 		// Double the available space
